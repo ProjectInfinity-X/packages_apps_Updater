@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="theme_primary">#212121</color>
-    <color name="theme_primary_dark">#1c1c1c</color>
-    <color name="theme_accent">@*android:color/accent_device_default_dark</color>
-    <color name="background">@android:color/system_neutral1_900</color>
-    <color name="toolbar_collapsed">@android:color/system_neutral1_700</color>
+    <color name="theme_primary">#000000</color>
+    <color name="theme_primary_dark">#000000</color>
+    <color name="theme_accent">#64B5F6</color>
+    <color name="background">#000000</color>
+    <color name="toolbar_collapsed">#000000</color>
 
-    <color name="inverted">#f5f5f5</color>
+    <color name="inverted">#FFFFFF</color>
+    
+    <color name="blue_primary">#2196F3</color>
+    <color name="blue_light">#42A5F5</color>
+    <color name="blue_dark">#0D47A1</color>
+    <color name="blue_accent">#448AFF</color>
+    <color name="card_background">#1A1A1A</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3B3B3</color>
+    <color name="changelog_background">#1565C0</color>
 </resources>

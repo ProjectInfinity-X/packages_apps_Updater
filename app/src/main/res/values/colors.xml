@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="theme_primary">#f5f5f5</color>
-    <color name="theme_primary_dark">#e0e0e0</color>
-    <color name="theme_accent">@*android:color/accent_device_default_light</color>
-    <color name="background">@android:color/system_neutral1_50</color>
-    <color name="toolbar_collapsed">@android:color/system_neutral1_100</color>
-    <color name="tv_background">#FF0E0E0F</color>
-    <color name="tv_card_background">#222222</color>
+    <color name="theme_primary">#2196F3</color>
+    <color name="theme_primary_dark">#1976D2</color>
+    <color name="theme_accent">#2196F3</color>
+    <color name="background">#FFFFFF</color>
+    <color name="toolbar_collapsed">#F5F5F5</color>
+    <color name="tv_background">#FFFFFF</color>
+    <color name="tv_card_background">#F5F5F5</color>
 
-    <color name="inverted">#212121</color>
-    <color name="ic_background">#333333</color>
+    <color name="inverted">#000000</color>
+    <color name="ic_background">#1976D2</color>
+    
+    <!-- Additional Blue Theme Colors -->
+    <color name="blue_primary">#2196F3</color>
+    <color name="blue_light">#64B5F6</color>
+    <color name="blue_dark">#1976D2</color>
+    <color name="blue_accent">#448AFF</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="changelog_background">#1565C0</color>
 </resources>

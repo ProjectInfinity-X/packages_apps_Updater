@@ -274,10 +274,12 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
                 throw new RuntimeException("Unknown update status");
         }
 
-        String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
-                DateFormat.LONG, update.getTimestamp());
-        String buildVersion = mActivity.getString(R.string.list_build_version,
-                Utils.getDisplayVersion(update.getVersion()));
+    String buildDate = StringGenerator.getDateLocalizedUTC(mActivity,
+        DateFormat.LONG, update.getTimestamp());
+    String buildVersion = mActivity.getString(
+        R.string.list_build_version_formatted,
+        Utils.getDisplayVersion(update.getVersion()),
+        android.os.Build.VERSION.RELEASE);
         viewHolder.mBuildDate.setText(buildDate);
         viewHolder.mBuildVersion.setText(buildVersion);
         viewHolder.mBuildVersion.setCompoundDrawables(null, null, null, null);
@@ -325,7 +327,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
 
     private void startDownloadWithWarning(final String downloadId) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        boolean warn = preferences.getBoolean(Constants.PREF_METERED_NETWORK_WARNING, true);
+        boolean warn = preferences.getBoolean(Constants.PREF_METERED_NETWORK_WARNING, false);
         if (!(Utils.isNetworkMetered(mActivity) && warn)) {
             mUpdaterController.startDownload(downloadId);
             return;

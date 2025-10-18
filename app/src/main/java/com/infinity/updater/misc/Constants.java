@@ -44,6 +44,7 @@ public final class Constants {
     public static final String PROP_DEVICE = "ro.infinity.device";
     public static final String PROP_NEXT_DEVICE = "ro.updater.next_device";
     public static final String PROP_UPDATER_ALLOW_DOWNGRADING = "infinity.updater.allow_downgrading";
+    public static final String PROP_INFINITY_VERSION = "ro.infinity.version";
 
     public static final String PREF_INSTALL_OLD_TIMESTAMP = "install_old_timestamp";
     public static final String PREF_INSTALL_NEW_TIMESTAMP = "install_new_timestamp";

@@ -45,6 +45,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -79,8 +80,12 @@ import com.infinity.updater.misc.Utils;
 import com.infinity.updater.model.Update;
 import com.infinity.updater.model.UpdateInfo;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -97,6 +102,10 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
     private RotateAnimation mRefreshAnimation;
 
     private boolean mIsTV;
+    
+    private TextView mChangelogText;
+    private ProgressBar mChangelogProgress;
+    private LinearLayout mChangelogCard;
 
     private UpdateInfo mToBeExported = null;
     private final ActivityResultLauncher<Intent> mExportUpdate = registerForActivityResult(
@@ -160,66 +169,47 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
             if (actionBar != null) {
                 actionBar.setDisplayShowTitleEnabled(false);
                 actionBar.setDisplayHomeAsUpEnabled(true);
-                final int statusBarHeight;
-                TypedValue tv = new TypedValue();
-                if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-                    statusBarHeight = TypedValue.complexToDimensionPixelSize(
-                            tv.data, getResources().getDisplayMetrics());
-                } else {
-                    statusBarHeight = 0;
-                }
-                RelativeLayout headerContainer = findViewById(R.id.header_container);
+                final int extraTopPx = (int) (8 * getResources().getDisplayMetrics().density);
+                LinearLayout headerContainer = findViewById(R.id.header_container);
                 recyclerView.setOnApplyWindowInsetsListener((view, insets) -> {
                     int top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
                     CollapsingToolbarLayout.LayoutParams lp =
                             (CollapsingToolbarLayout.LayoutParams)
                                     headerContainer.getLayoutParams();
-                    lp.topMargin = top + statusBarHeight;
+                    lp.topMargin = top + extraTopPx;
                     headerContainer.setLayoutParams(lp);
                     return insets;
                 });
             }
         }
 
-        TextView headerTitle = findViewById(R.id.header_title);
-        headerTitle.setText(getString(R.string.header_title_text,
-                Utils.getDisplayVersion(BuildInfoUtils.getBuildVersion())));
-
-        updateLastCheckedString();
 
         if (!mIsTV) {
-            // Switch between header title and appbar title minimizing overlaps
-            final CollapsingToolbarLayout collapsingToolbar = findViewById(R.id.collapsing_toolbar);
-            final AppBarLayout appBar = findViewById(R.id.app_bar);
-            appBar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-                boolean mIsShown = false;
-
-                @Override
-                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                    int scrollRange = appBarLayout.getTotalScrollRange();
-                    if (!mIsShown && scrollRange + verticalOffset < 10) {
-                        collapsingToolbar.setTitle(getString(R.string.display_name));
-                        mIsShown = true;
-                    } else if (mIsShown && scrollRange + verticalOffset > 100) {
-                        collapsingToolbar.setTitle(null);
-                        mIsShown = false;
-                    }
-                }
-            });
-
             mRefreshAnimation = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f,
                     Animation.RELATIVE_TO_SELF, 0.5f);
             mRefreshAnimation.setInterpolator(new LinearInterpolator());
             mRefreshAnimation.setDuration(1000);
 
             if (!Utils.hasTouchscreen(this)) {
+                AppBarLayout appBar = findViewById(R.id.app_bar);
                 // This can't be collapsed without a touchscreen
                 appBar.setExpanded(false);
             }
         } else {
-            findViewById(R.id.refresh).setOnClickListener(v -> downloadUpdatesList(true));
+            findViewById(R.id.refresh).setOnClickListener(v -> {
+                downloadUpdatesList(true);
+                fetchChangelog();
+            });
             findViewById(R.id.preferences).setOnClickListener(v -> showPreferencesDialog());
         }
+        
+        // Initialize changelog views
+        mChangelogCard = findViewById(R.id.changelog_card);
+        mChangelogText = findViewById(R.id.changelog_text);
+        mChangelogProgress = findViewById(R.id.changelog_progress);
+        
+        // Fetch and display changelog
+        fetchChangelog();
     }
 
     @Override
@@ -268,14 +258,10 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
         int itemId = item.getItemId();
         if (itemId == R.id.menu_refresh) {
             downloadUpdatesList(true);
+            fetchChangelog();
             return true;
         } else if (itemId == R.id.menu_preferences) {
             showPreferencesDialog();
-            return true;
-        } else if (itemId == R.id.menu_show_changelog) {
-            Intent openUrl = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse(Utils.getChangelogURL(this)));
-            startActivity(openUrl);
             return true;
         } else if (itemId == R.id.menu_local_update) {
             mUpdateImporter.openImportPicker();
@@ -386,9 +372,12 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
         if (sortedUpdates.isEmpty()) {
             findViewById(R.id.no_new_updates_view).setVisibility(View.VISIBLE);
             findViewById(R.id.recycler_view).setVisibility(View.GONE);
+            findViewById(R.id.main_scroll_view).setVisibility(View.GONE);
+            mChangelogCard.setVisibility(View.GONE);
         } else {
             findViewById(R.id.no_new_updates_view).setVisibility(View.GONE);
             findViewById(R.id.recycler_view).setVisibility(View.VISIBLE);
+            findViewById(R.id.main_scroll_view).setVisibility(View.VISIBLE);
             sortedUpdates.sort((u1, u2) -> Long.compare(u2.getTimestamp(), u1.getTimestamp()));
             for (UpdateInfo update : sortedUpdates) {
                 updateIds.add(update.getDownloadId());
@@ -418,7 +407,6 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             long millis = System.currentTimeMillis();
             preferences.edit().putLong(Constants.PREF_LAST_UPDATE_CHECK, millis).apply();
-            updateLastCheckedString();
             if (json.exists() && Utils.isUpdateCheckEnabled(this) &&
                     Utils.checkForNewUpdates(json, jsonNew)) {
                 UpdatesCheckReceiver.updateRepeatingUpdatesCheck(this);
@@ -482,25 +470,19 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
         downloadClient.start();
     }
 
+    /*
     private void updateLastCheckedString() {
-        final SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(this);
-        long lastCheck = preferences.getLong(Constants.PREF_LAST_UPDATE_CHECK, -1) / 1000;
-        String lastCheckString = getString(R.string.header_last_updates_check,
-                StringGenerator.getDateLocalized(this, DateFormat.LONG, lastCheck),
-                StringGenerator.getTimeLocalized(this, lastCheck));
-        TextView headerLastCheck = findViewById(R.id.header_last_check);
-        headerLastCheck.setText(lastCheckString);
-
         TextView headerBuildVersion = findViewById(R.id.header_build_version);
-        headerBuildVersion.setText(
-                getString(R.string.header_android_version, Build.VERSION.RELEASE));
-
-        TextView headerBuildDate = findViewById(R.id.header_build_date);
-        headerBuildDate.setText(getString(R.string.current_build_date, StringGenerator.getDateLocalizedUTC(this,
-                DateFormat.LONG, BuildInfoUtils.getBuildDateTimestamp())));
-
+        String infinityVersion = BuildInfoUtils.getInfinityVersion();
+        String versionText;
+        if (!infinityVersion.isEmpty()) {
+            versionText = "Android " + Build.VERSION.RELEASE + " (v" + infinityVersion + ")";
+        } else {
+            versionText = "Android " + Build.VERSION.RELEASE;
+        }
+        headerBuildVersion.setText(versionText);
     }
+    */
 
     private void handleDownloadStatusChange(String downloadId) {
         if (Update.LOCAL_ID.equals(downloadId)) {
@@ -573,8 +555,11 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
             findViewById(R.id.refresh_progress).setVisibility(View.GONE);
             if (mAdapter.getItemCount() > 0) {
                 findViewById(R.id.recycler_view).setVisibility(View.VISIBLE);
+                findViewById(R.id.main_scroll_view).setVisibility(View.VISIBLE);
             } else {
                 findViewById(R.id.no_new_updates_view).setVisibility(View.VISIBLE);
+                findViewById(R.id.main_scroll_view).setVisibility(View.GONE);
+                mChangelogCard.setVisibility(View.GONE);
             }
         }
     }
@@ -595,10 +580,10 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         autoCheckInterval.setSelection(Utils.getUpdateCheckSetting(this));
-        autoDelete.setChecked(prefs.getBoolean(Constants.PREF_AUTO_DELETE_UPDATES, false));
+        autoDelete.setChecked(prefs.getBoolean(Constants.PREF_AUTO_DELETE_UPDATES, true));
         meteredNetworkWarning.setChecked(prefs.getBoolean(Constants.PREF_METERED_NETWORK_WARNING,
-                prefs.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, true)));
-        abPerfMode.setChecked(prefs.getBoolean(Constants.PREF_AB_PERF_MODE, false));
+                prefs.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, false)));
+        abPerfMode.setChecked(prefs.getBoolean(Constants.PREF_AB_PERF_MODE, true));
 
         if (getResources().getBoolean(R.bool.config_hideRecoveryUpdate)) {
             // Hide the update feature if explicitly requested.
@@ -659,5 +644,61 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
                     }
                 })
                 .show();
+    }
+    
+    private void fetchChangelog() {
+        mChangelogCard.setVisibility(View.VISIBLE);
+        mChangelogProgress.setVisibility(View.VISIBLE);
+        mChangelogText.setVisibility(View.GONE);
+        
+        new Thread(() -> {
+            try {
+                String changelogUrl = Utils.getChangelogURL(this);
+                URL url = new URL(changelogUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+                
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(connection.getInputStream()));
+                    StringBuilder changelog = new StringBuilder();
+                    String line;
+                    
+                    while ((line = reader.readLine()) != null) {
+                        changelog.append(line).append("\n");
+                    }
+                    reader.close();
+                    
+                    final String changelogText = changelog.toString().trim();
+                    runOnUiThread(() -> {
+                        mChangelogProgress.setVisibility(View.GONE);
+                        if (!changelogText.isEmpty()) {
+                            mChangelogText.setText(changelogText);
+                            mChangelogText.setVisibility(View.VISIBLE);
+                        } else {
+                            mChangelogText.setText("No changelog available.");
+                            mChangelogText.setVisibility(View.VISIBLE);
+                        }
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        mChangelogProgress.setVisibility(View.GONE);
+                        mChangelogText.setText("Unable to fetch changelog.");
+                        mChangelogText.setVisibility(View.VISIBLE);
+                    });
+                }
+                connection.disconnect();
+            } catch (Exception e) {
+                Log.e(TAG, "Error fetching changelog", e);
+                runOnUiThread(() -> {
+                    mChangelogProgress.setVisibility(View.GONE);
+                    mChangelogText.setText("Failed to load changelog. Check your internet connection.");
+                    mChangelogText.setVisibility(View.VISIBLE);
+                });
+            }
+        }).start();
     }
 }
