@@ -368,7 +368,7 @@ public class Utils {
     public static int getUpdateCheckSetting(Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         return preferences.getInt(Constants.PREF_AUTO_UPDATES_CHECK_INTERVAL,
-                Constants.AUTO_UPDATES_CHECK_INTERVAL_DAILY);
+                Constants.AUTO_UPDATES_CHECK_INTERVAL_WEEKLY);
     }
 
     public static boolean isUpdateCheckEnabled(Context context) {
