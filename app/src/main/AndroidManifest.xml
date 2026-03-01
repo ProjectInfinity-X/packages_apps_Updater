@@ -43,6 +43,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".GameActivity"
+            android:exported="true"
+            android:label="Play Game" />
 
         <service
             android:name=".controller.UpdaterService"

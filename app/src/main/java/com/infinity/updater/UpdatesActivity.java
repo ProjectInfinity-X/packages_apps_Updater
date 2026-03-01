@@ -71,6 +71,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import com.infinity.updater.controller.UpdaterController;
+import com.infinity.updater.GameActivity;
 import com.infinity.updater.controller.UpdaterService;
 import com.infinity.updater.download.DownloadClient;
 import com.infinity.updater.misc.BuildInfoUtils;
@@ -210,6 +211,21 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
         
         // Fetch and display changelog
         fetchChangelog();
+
+        // Set up Play Game link if present
+        TextView playGameLink = findViewById(R.id.play_game_link);
+        if (playGameLink != null) {
+            playGameLink.setText(getString(R.string.play_game_till_wait));
+            playGameLink.setTextColor(getResources().getColor(R.color.blue_primary));
+            playGameLink.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(UpdatesActivity.this, GameActivity.class);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Game not available", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override

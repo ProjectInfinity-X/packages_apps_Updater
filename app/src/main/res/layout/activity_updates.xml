@@ -110,6 +110,22 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/play_game_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/play_game_till_wait"
+            android:textColor="@color/blue_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible"
+            android:autoLink="none"
+        />
+
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
