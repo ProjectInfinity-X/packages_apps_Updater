@@ -101,6 +101,8 @@
     <string name="list_verifying_update">Verifying update</string>
     <string name="list_no_updates">No New Updates Found</string>
     <string name="play_game_till_wait">Click to play a game while you wait...</string>
+    <string name="check_source_changelog">Check latest source changelog</string>
+    <string name="report_issue">Report an issue</string>
 
     <string name="action_download">Download</string>
     <string name="action_pause">Pause</string>

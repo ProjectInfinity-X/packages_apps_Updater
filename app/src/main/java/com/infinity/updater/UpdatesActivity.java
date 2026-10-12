@@ -226,6 +226,34 @@ public class UpdatesActivity extends UpdatesListActivity implements UpdateImport
                 }
             });
         }
+
+        TextView sourceChangelogLink = findViewById(R.id.source_changelog_link);
+        if (sourceChangelogLink != null) {
+            sourceChangelogLink.setText(getString(R.string.check_source_changelog));
+            sourceChangelogLink.setTextColor(getResources().getColor(R.color.blue_primary));
+            sourceChangelogLink.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://projectinfinity-x.com/changelog/"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Unable to open link", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        TextView reportIssueLink = findViewById(R.id.report_issue_link);
+        if (reportIssueLink != null) {
+            reportIssueLink.setText(getString(R.string.report_issue));
+            reportIssueLink.setTextColor(getResources().getColor(R.color.blue_primary));
+            reportIssueLink.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://projectinfinity-x.com/bug-report/"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(this, "Unable to open link", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
