@@ -28,4 +28,5 @@
 
     <string name="build_type_unknown">Unofficial or missing OTA info</string>
 
+    <string name="list_no_new_updates">No New Updates Found</string>
 </resources>
