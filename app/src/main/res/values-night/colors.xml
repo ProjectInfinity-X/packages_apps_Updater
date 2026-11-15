@@ -1,19 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="theme_primary">#000000</color>
-    <color name="theme_primary_dark">#000000</color>
-    <color name="theme_accent">#64B5F6</color>
-    <color name="background">#000000</color>
-    <color name="toolbar_collapsed">#000000</color>
+    <color name="theme_primary">#4DA6FF</color>
+    <color name="theme_primary_dark">#0B0E14</color>
+    <color name="theme_accent">#4DA6FF</color>
+    <color name="background">#0B0E14</color>
+    <color name="toolbar_collapsed">#0B0E14</color>
+    <color name="tv_background">#0B0E14</color>
+    <color name="tv_card_background">#161B24</color>
 
-    <color name="inverted">#FFFFFF</color>
-    
-    <color name="blue_primary">#2196F3</color>
-    <color name="blue_light">#42A5F5</color>
-    <color name="blue_dark">#0D47A1</color>
-    <color name="blue_accent">#448AFF</color>
-    <color name="card_background">#1A1A1A</color>
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#B3B3B3</color>
-    <color name="changelog_background">#1565C0</color>
+    <color name="inverted">#F1F5F9</color>
+
+    <!-- Infinity-X Modern Blue & Neutral Surface Palette (Dark) -->
+    <color name="blue_primary">#4DA6FF</color>
+    <color name="blue_light">#82C4FF</color>
+    <color name="blue_dark">#1A73E8</color>
+    <color name="blue_accent">#4DA6FF</color>
+    <color name="on_blue_primary">#071D36</color>
+    <color name="blue_primary_container">#172B47</color>
+    <color name="blue_on_primary_container">#A6D1FF</color>
+
+    <color name="card_background">#161B24</color>
+    <color name="surface_card">#161B24</color>
+    <color name="surface_tonal">#1F2633</color>
+    <color name="surface_stroke">#262F3F</color>
+    <color name="divider_color">#232B3A</color>
+    <color name="progress_track">#262F3F</color>
+
+    <color name="text_primary">#F1F5F9</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_tertiary">#64748B</color>
+    <color name="changelog_background">#161B24</color>
+
+    <!-- Semantic Status Colors -->
+    <color name="status_success">#81C995</color>
+    <color name="status_success_container">#132A1C</color>
+    <color name="status_warning">#FDD663</color>
+    <color name="status_warning_container">#2C230F</color>
+    <color name="status_error">#F28B82</color>
+    <color name="status_error_container">#331817</color>
 </resources>

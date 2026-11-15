@@ -1,123 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/update_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground"
     android:nextFocusRight="@+id/update_action"
-    android:layout_marginTop="0dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:padding="20dp"
-    android:background="@drawable/update_item_outline">
+    app:cardBackgroundColor="@color/surface_card"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/surface_stroke"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:weightSum="1"
-        android:baselineAligned="false">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
 
+        <!-- Top Status Badge + Overflow Menu -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/build_version"
+                android:id="@+id/update_status_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:alpha="0.87"
-                android:drawablePadding="8dp"
-                android:maxLines="1"
-                android:paddingBottom="8sp"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="16sp"
-                tools:text="Infinity-X 20" />
+                android:background="@drawable/bg_pill_tonal"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                android:textColor="@color/blue_on_primary_container"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="Update available" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/update_menu"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/menu_preferences"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_more_vert" />
+        </LinearLayout>
+
+        <!-- Build Version Headline -->
+        <TextView
+            android:id="@+id/build_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:drawablePadding="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="Infinity-X 17 (Android 17)" />
+
+        <!-- Date & Size Metadata Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/build_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:textSize="14sp"
-                tools:text="18 June 2023" />
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                tools:text="November 15, 2026" />
 
-            <RelativeLayout
+            <TextView
+                android:id="@+id/build_meta_separator"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:text="@string/meta_separator"
+                android:textColor="@color/text_tertiary"
+                android:textSize="13sp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/progress"
-                    android:visibility="invisible"
-                    tools:visibility="visible">
+            <TextView
+                android:id="@+id/build_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                tools:text="2.4 GB" />
+        </LinearLayout>
 
-                    <ProgressBar
-                        android:id="@+id/progress_bar"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content"
-                        android:paddingTop="4sp"
-                        tools:progress="65" />
+        <!-- Active Download / Install Progress Area -->
+        <LinearLayout
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-                    <TextView
-                        android:id="@+id/progress_percent"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        tools:text="65%" />
-                </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/progress_text"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/progress"
-                    android:ellipsize="marquee"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
                     android:singleLine="true"
-                    android:visibility="invisible"
-                    tools:text="162 of 1.1 GB (3 minutes left)"
-                    tools:visibility="visible" />
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="1.2 GB of 2.4 GB (3 minutes left)" />
 
                 <TextView
-                    android:id="@+id/build_size"
+                    android:id="@+id/progress_percent"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingTop="8sp"
-                    android:singleLine="true"
-                    tools:text="1.1 GB"
-                    tools:visibility="invisible" />
-            </RelativeLayout>
+                    android:textColor="@color/blue_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="65%" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginTop="8dp"
+                android:indeterminateTint="@color/blue_primary"
+                android:max="100"
+                android:progressDrawable="@drawable/progress_bar_rounded"
+                tools:progress="65" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <ImageButton
-                android:id="@+id/update_menu"
-                style="?android:attr/actionOverflowButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:padding="8dp"
-                android:contentDescription="@null" />
-            <Button
-                android:id="@id/update_action"
-                style="@style/ModernButtonStyle"
-                android:background="?android:selectableItemBackgroundBorderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:textColor="@color/blue_primary"
-                tools:text="Pause" />
-        </LinearLayout>
+        <!-- Primary Action CTA -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/update_action"
+            style="@style/ModernButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/blue_primary"
+            android:textColor="@color/on_blue_primary"
+            tools:text="Download" />
     </LinearLayout>
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>
