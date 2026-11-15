@@ -39,7 +39,7 @@
     <string name="changelog_empty">No changelog available for this release.</string>
     <string name="changelog_error">Unable to load changelog right now.</string>
     <string name="changelog_network_error">Failed to load changelog. Check your internet connection.</string>
-    <string name="resources_title">Resources &amp; extras</string>
+    <string name="resources_title">Resources</string>
     <string name="play_game_subtitle">Play a quick game while you wait</string>
     <string name="source_changelog_subtitle">View full Project Infinity-X ROM changes</string>
     <string name="report_issue_subtitle">Submit bug reports and feedback</string>
