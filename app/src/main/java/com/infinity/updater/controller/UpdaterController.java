@@ -234,8 +234,9 @@ public class UpdaterController {
                     return;
                 }
                 final long now = SystemClock.elapsedRealtime();
-                int progress = Math.round(bytesRead * 100f / contentLength);
-                if (progress != mProgress || mLastUpdate - now > MAX_REPORT_INTERVAL_MS) {
+                int progress = Math.max(0, Math.min(100,
+                        Math.round(bytesRead * 100f / contentLength)));
+                if (progress != mProgress || now - mLastUpdate > MAX_REPORT_INTERVAL_MS) {
                     mProgress = progress;
                     mLastUpdate = now;
                     update.setProgress(progress);

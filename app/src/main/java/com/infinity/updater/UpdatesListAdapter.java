@@ -72,6 +72,7 @@ import java.util.List;
 public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.ViewHolder> {
 
     private static final String TAG = "UpdateListAdapter";
+    private static final Object PAYLOAD_PROGRESS = new Object();
 
     private static final int BATTERY_PLUGGED_ANY = BatteryManager.BATTERY_PLUGGED_AC
             | BatteryManager.BATTERY_PLUGGED_USB
@@ -182,8 +183,8 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             canDelete = true;
             styleStatusBadge(viewHolder.mStatusBadge, R.string.status_downloading,
                     R.color.blue_primary_container, R.color.blue_on_primary_container);
-            String downloaded = Formatter.formatShortFileSize(mActivity,
-                    update.getFile().length());
+            long downloadedBytes = update.getFile() != null ? update.getFile().length() : 0;
+            String downloaded = Formatter.formatShortFileSize(mActivity, downloadedBytes);
             String percentage = NumberFormat.getPercentInstance().format(
                     update.getProgress() / 100.f);
             viewHolder.mPercentage.setVisibility(View.VISIBLE);
@@ -199,7 +200,10 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
                         R.string.list_download_progress_newer, downloaded, totalSize));
             }
             setButtonAction(viewHolder.mAction, Action.PAUSE, downloadId, true);
-            viewHolder.mProgressBar.setIndeterminate(update.getStatus() == UpdateStatus.STARTING);
+            boolean isStarting = update.getStatus() == UpdateStatus.STARTING;
+            if (viewHolder.mProgressBar.isIndeterminate() != isStarting) {
+                viewHolder.mProgressBar.setIndeterminate(isStarting);
+            }
             viewHolder.mProgressBar.setProgress(update.getProgress());
         } else if (mUpdaterController.isInstallingUpdate(downloadId)) {
             styleStatusBadge(viewHolder.mStatusBadge, R.string.status_installing,
@@ -214,7 +218,9 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
                     update.getInstallProgress() / 100.f);
             viewHolder.mPercentage.setVisibility(View.VISIBLE);
             viewHolder.mPercentage.setText(percentage);
-            viewHolder.mProgressBar.setIndeterminate(false);
+            if (viewHolder.mProgressBar.isIndeterminate()) {
+                viewHolder.mProgressBar.setIndeterminate(false);
+            }
             viewHolder.mProgressBar.setProgress(update.getInstallProgress());
         } else if (mUpdaterController.isVerifyingUpdate(downloadId)) {
             styleStatusBadge(viewHolder.mStatusBadge, R.string.status_verifying,
@@ -222,21 +228,25 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             setButtonAction(viewHolder.mAction, Action.INSTALL, downloadId, false);
             viewHolder.mPercentage.setVisibility(View.GONE);
             viewHolder.mProgressText.setText(R.string.list_verifying_update);
-            viewHolder.mProgressBar.setIndeterminate(true);
+            if (!viewHolder.mProgressBar.isIndeterminate()) {
+                viewHolder.mProgressBar.setIndeterminate(true);
+            }
         } else {
             canDelete = true;
             styleStatusBadge(viewHolder.mStatusBadge, R.string.status_paused,
                     R.color.status_warning_container, R.color.status_warning);
             setButtonAction(viewHolder.mAction, Action.RESUME, downloadId, !isBusy());
-            String downloaded = Formatter.formatShortFileSize(mActivity,
-                    update.getFile().length());
+            long downloadedBytes = update.getFile() != null ? update.getFile().length() : 0;
+            String downloaded = Formatter.formatShortFileSize(mActivity, downloadedBytes);
             String percentage = NumberFormat.getPercentInstance().format(
                     update.getProgress() / 100.f);
             viewHolder.mPercentage.setVisibility(View.VISIBLE);
             viewHolder.mPercentage.setText(percentage);
             viewHolder.mProgressText.setText(mActivity.getString(
                     R.string.list_download_progress_newer, downloaded, totalSize));
-            viewHolder.mProgressBar.setIndeterminate(false);
+            if (viewHolder.mProgressBar.isIndeterminate()) {
+                viewHolder.mProgressBar.setIndeterminate(false);
+            }
             viewHolder.mProgressBar.setProgress(update.getProgress());
         }
 
@@ -276,6 +286,67 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
         String fileSize = Formatter.formatShortFileSize(mActivity, update.getFileSize());
         viewHolder.mBuildSize.setText(fileSize);
         viewHolder.mProgress.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int position,
+            @NonNull List<Object> payloads) {
+        if (!payloads.isEmpty() && payloads.contains(PAYLOAD_PROGRESS)
+                && mDownloadIds != null && mUpdaterController != null
+                && position >= 0 && position < mDownloadIds.size()) {
+            UpdateInfo update = mUpdaterController.getUpdate(mDownloadIds.get(position));
+            if (update != null && bindProgressOnly(viewHolder, update)) {
+                return;
+            }
+        }
+        onBindViewHolder(viewHolder, position);
+    }
+
+    private boolean bindProgressOnly(ViewHolder viewHolder, UpdateInfo update) {
+        final String downloadId = update.getDownloadId();
+        if (mUpdaterController.isDownloading(downloadId)) {
+            String totalSize = Formatter.formatShortFileSize(mActivity, update.getFileSize());
+            long downloadedBytes = update.getFile() != null ? update.getFile().length() : 0;
+            String downloaded = Formatter.formatShortFileSize(mActivity, downloadedBytes);
+            String percentage = NumberFormat.getPercentInstance().format(
+                    update.getProgress() / 100.f);
+            viewHolder.mPercentage.setVisibility(View.VISIBLE);
+            viewHolder.mPercentage.setText(percentage);
+            long eta = update.getEta();
+            if (eta > 0) {
+                CharSequence etaString = StringGenerator.formatETA(mActivity, eta * 1000);
+                viewHolder.mProgressText.setText(mActivity.getString(
+                        R.string.list_download_progress_eta_newer, downloaded, totalSize,
+                        etaString));
+            } else {
+                viewHolder.mProgressText.setText(mActivity.getString(
+                        R.string.list_download_progress_newer, downloaded, totalSize));
+            }
+            boolean isStarting = update.getStatus() == UpdateStatus.STARTING;
+            if (viewHolder.mProgressBar.isIndeterminate() != isStarting) {
+                viewHolder.mProgressBar.setIndeterminate(isStarting);
+            }
+            viewHolder.mProgressBar.setProgress(update.getProgress());
+            viewHolder.mProgress.setVisibility(View.VISIBLE);
+            return true;
+        } else if (mUpdaterController.isInstallingUpdate(downloadId)) {
+            boolean notAB = !mUpdaterController.isInstallingABUpdate();
+            viewHolder.mProgressText.setText(notAB ? R.string.dialog_prepare_zip_message :
+                    update.getFinalizing() ?
+                            R.string.finalizing_package :
+                            R.string.preparing_ota_first_boot);
+            String percentage = NumberFormat.getPercentInstance().format(
+                    update.getInstallProgress() / 100.f);
+            viewHolder.mPercentage.setVisibility(View.VISIBLE);
+            viewHolder.mPercentage.setText(percentage);
+            if (viewHolder.mProgressBar.isIndeterminate()) {
+                viewHolder.mProgressBar.setIndeterminate(false);
+            }
+            viewHolder.mProgressBar.setProgress(update.getInstallProgress());
+            viewHolder.mProgress.setVisibility(View.VISIBLE);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -359,6 +430,16 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
         int position = mDownloadIds.indexOf(downloadId);
         if (position >= 0) {
             notifyItemChanged(position);
+        }
+    }
+
+    public void notifyProgressChanged(String downloadId) {
+        if (mDownloadIds == null) {
+            return;
+        }
+        int position = mDownloadIds.indexOf(downloadId);
+        if (position >= 0) {
+            notifyItemChanged(position, PAYLOAD_PROGRESS);
         }
     }
 
